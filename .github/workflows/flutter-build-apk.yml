@@ -18,7 +18,12 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-
+          
+      - name: Debug project structure
+        run: |
+         pwd
+         ls
+    
       - name: Install dependencies
         run: flutter pub get
 
