@@ -1,40 +1,33 @@
 name: Flutter APK Build
 
-# 触发条件
 on:
   push:
     branches:
-      - main   # 每次 push 到 main 分支触发
-  workflow_dispatch: # 可手动触发
+      - main
+  workflow_dispatch:
 
 jobs:
   build_apk:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ 拉取代码
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ 安装 Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
 
-      # 3️⃣ 安装 Flutter 依赖
       - name: Install dependencies
         run: flutter pub get
 
-      # 4️⃣ 接受 Android SDK licenses
       - name: Accept Android SDK licenses
         run: yes | flutter doctor --android-licenses
 
-      # 5️⃣ 编译 release APK
       - name: Build release APK
         run: flutter build apk --release
 
-      # 6️⃣ 上传 APK 为 workflow artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
