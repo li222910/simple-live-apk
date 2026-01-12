@@ -18,7 +18,12 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-
+          
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
       # ⚠️ 关键：在 simple_live_app 目录运行
       - name: Install dependencies
         working-directory: simple_live_app
