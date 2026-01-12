@@ -11,26 +11,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ 拉取仓库
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2️⃣ 设置 Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
 
+      # 3️⃣ 设置 Java 17
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
+      # 4️⃣ 缓存 Flutter Pub 依赖
       - name: Cache Pub
         uses: actions/cache@v3
         with:
           path: ~/.pub-cache
           key: pub-${{ hashFiles('**/pubspec.yaml') }}
 
+      # 5️⃣ 缓存 Gradle
       - name: Cache Gradle
         uses: actions/cache@v3
         with:
@@ -39,17 +44,26 @@ jobs:
             ~/.gradle/wrapper/
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
 
+      # 6️⃣ 安装 Flutter 依赖
       - name: Install dependencies
         working-directory: simple_live_app
         run: flutter pub get
 
+      # 7️⃣ 接受 Android SDK licenses
       - name: Accept Android SDK licenses
         run: yes | flutter doctor --android-licenses
 
+      # 8️⃣ 构建 debug APK
       - name: Build debug APK
         working-directory: simple_live_app
         run: flutter build apk --debug --verbose
 
+      # 9️⃣ 列出生成目录，确认 APK 路径
+      - name: List APK output
+        working-directory: simple_live_app
+        run: ls -R build/app/outputs/flutter-apk/
+
+      # 🔟 上传 debug APK
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
