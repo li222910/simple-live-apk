@@ -1,4 +1,4 @@
-name: Flutter Debug APK Build
+name: Flutter Release APK Build (Optimized)
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_debug_apk:
+  build_release_apk:
     runs-on: ubuntu-latest
 
     steps:
@@ -53,19 +53,40 @@ jobs:
       - name: Accept Android SDK licenses
         run: yes | flutter doctor --android-licenses
 
-      # 8️⃣ 构建 debug APK
-      - name: Build debug APK
-        working-directory: simple_live_app
-        run: flutter build apk --debug --verbose
+      # 8️⃣ 生成临时自签名 keystore
+      - name: Generate temporary keystore
+        run: |
+          keytool -genkeypair \
+            -alias temp_release_key \
+            -keyalg RSA -keysize 2048 \
+            -storetype JKS \
+            -keystore simple_live_app/temp_key.jks \
+            -storepass android \
+            -keypass android \
+            -validity 10000 \
+            -dname "CN=Temp, OU=Temp, O=Temp, L=Temp, S=Temp, C=CN"
 
-      # 9️⃣ 列出生成目录，确认 APK 路径
+      # 9️⃣ 写临时 key.properties
+      - name: Generate key.properties
+        run: |
+          echo "storePassword=android" > simple_live_app/key.properties
+          echo "keyPassword=android" >> simple_live_app/key.properties
+          echo "keyAlias=temp_release_key" >> simple_live_app/key.properties
+          echo "storeFile=temp_key.jks" >> simple_live_app/key.properties
+
+      # 🔟 构建 release APK
+      - name: Build release APK
+        working-directory: simple_live_app
+        run: flutter build apk --release --verbose
+
+      # 1️⃣1️⃣ 列出 APK 目录确认路径
       - name: List APK output
         working-directory: simple_live_app
         run: ls -R build/app/outputs/flutter-apk/
 
-      # 🔟 上传 debug APK
-      - name: Upload debug APK
+      # 1️⃣2️⃣ 上传 release APK
+      - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
-          path: simple_live_app/build/app/outputs/flutter-apk/app-debug.apk
+          name: app-release-apk
+          path: simple_live_app/build/app/outputs/flutter-apk/app-release.apk
